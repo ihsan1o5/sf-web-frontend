@@ -36,7 +36,7 @@ function BasicLayout({ image, children }) {
         action={{
           type: "external",
           route: "https://creative-tim.com/product/material-dashboard-react",
-          label: "free download",
+          label: "Read More",
           color: "dark",
         }}
       />
