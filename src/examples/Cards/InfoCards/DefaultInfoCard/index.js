@@ -19,40 +19,34 @@ import PropTypes from "prop-types";
 // @mui material components
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
-import Icon from "@mui/material/Icon";
+import Grid from "@mui/material/Grid";
+import MDAvatar from "components/MDAvatar";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 
-function DefaultInfoCard({ color, icon, title, description, value }) {
+import burceMars from "assets/images/bruce-mars.jpg";
+
+function DefaultInfoCard({profile, title, description, value }) {
   return (
     <Card>
-      <MDBox p={2} mx={3} display="flex" justifyContent="center">
-        <MDBox
-          display="grid"
-          justifyContent="center"
-          alignItems="center"
-          bgColor={color}
-          color="white"
-          width="4rem"
-          height="4rem"
-          shadow="md"
-          borderRadius="lg"
-          variant="gradient"
-        >
-          <Icon fontSize="default">{icon}</Icon>
+      <MDBox p={2} mx={3} display="flex" gap={2} justifyContent="start">
+        <Grid item>
+            <MDAvatar src={profile ? profile : burceMars} alt="profile-image" size="md" shadow="sm" />
+        </Grid>
+        <MDBox display="flex" flexDirection="column" justifyContent="start" mt={0.5}>
+            <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
+            {title}
+            </MDTypography>
+            {description && (
+            <MDTypography variant="caption" color="text" fontWeight="regular">
+                {description}
+            </MDTypography>
+            )}
         </MDBox>
       </MDBox>
       <MDBox pb={2} px={2} textAlign="center" lineHeight={1.25}>
-        <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
-          {title}
-        </MDTypography>
-        {description && (
-          <MDTypography variant="caption" color="text" fontWeight="regular">
-            {description}
-          </MDTypography>
-        )}
         {description && !value ? null : <Divider />}
         {value && (
           <MDTypography variant="h5" fontWeight="medium">

@@ -1,42 +1,34 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
 
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
+import { useState } from "react";
 // @mui material components
 import Grid from "@mui/material/Grid";
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
+import Card from "@mui/material/Card";
+import DataTable from "examples/Tables/DataTable";
+import MDTypography from "components/MDTypography";
+import DefaultInfoCard from "examples/Cards/InfoCards/DefaultInfoCard";
 
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
-import ReportsBarChart from "examples/Charts/BarCharts/ReportsBarChart";
-import ReportsLineChart from "examples/Charts/LineCharts/ReportsLineChart";
 import ComplexStatisticsCard from "examples/Cards/StatisticsCards/ComplexStatisticsCard";
+import AppBar from "@mui/material/AppBar";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Icon from "@mui/material/Icon";
 
-// Data
-import reportsBarChartData from "layouts/dashboard/data/reportsBarChartData";
-import reportsLineChartData from "layouts/dashboard/data/reportsLineChartData";
+import authorsTableData from "layouts/tables/data/authorsTableData";
 
-// Dashboard components
-import Projects from "layouts/dashboard/components/Projects";
-import OrdersOverview from "layouts/dashboard/components/OrdersOverview";
 
 function Dashboard() {
-  const { sales, tasks } = reportsLineChartData;
+    const { columns, rows } = authorsTableData();
+    const [tabsOrientation, setTabsOrientation] = useState("horizontal");
+    const [tabValue, setTabValue] = useState("card");
+
+    const handleSetTabValue = (event, newValue) => setTabValue(newValue);
 
   return (
     <DashboardLayout>
@@ -103,57 +95,105 @@ function Dashboard() {
             </MDBox>
           </Grid>
         </Grid>
-        <MDBox mt={4.5}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsBarChart
-                  color="info"
-                  title="website views"
-                  description="Last Campaign Performance"
-                  date="campaign sent 2 days ago"
-                  chart={reportsBarChartData}
-                />
-              </MDBox>
+
+        <Grid container spacing={3} alignItems="center" mt={1}>
+            <Grid item xs={12} md={6} lg={4} sx={{ ml: "auto" }}>
+                <AppBar position="static">
+                    <Tabs orientation={tabsOrientation} value={tabValue} onChange={handleSetTabValue}>
+                        <Tab
+                            label="Card View"
+                            value="card"
+                            icon={
+                                <Icon fontSize="small" sx={{ mt: -0.25 }}>
+                                    view_module
+                                </Icon>
+                            }
+                        />
+                        <Tab
+                            label="Table View"
+                            value="table"
+                            icon={
+                                <Icon fontSize="small" sx={{ mt: -0.25 }}>
+                                    table_chart
+                                </Icon>
+                            }
+                        />
+                    </Tabs>
+                </AppBar>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="success"
-                  title="daily sales"
-                  description={
-                    <>
-                      (<strong>+15%</strong>) increase in today sales.
-                    </>
-                  }
-                  date="updated 4 min ago"
-                  chart={sales}
-                />
-              </MDBox>
+        </Grid>
+
+        {tabValue === "card" && (
+            <Grid container spacing={3} mt={1}>
+                <Grid item xs={12} md={6} xl={3}>
+                    <DefaultInfoCard
+                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495035"
+                        title="M. Idrees"
+                        description="School Fees Due for the Month of June"
+                        value="Rs. 2000"
+                    />
+                </Grid>
+                <Grid item xs={12} md={6} xl={3}>
+                    <DefaultInfoCard
+                        profile=""
+                        title="M. Osama"
+                        description="School Fees Due for the Month of June"
+                        value="Rs. 2000"
+                    />
+                </Grid>
+                <Grid item xs={12} md={6} xl={3}>
+                    <DefaultInfoCard
+                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495035"
+                        title="Abdurrahman"
+                        description="School Fees Due for the Month of June"
+                        value="Rs. 2000"
+                    />
+                </Grid>
+                <Grid item xs={12} md={6} xl={3}>
+                    <DefaultInfoCard
+                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495036"
+                        title="M. Saeed"
+                        description="School Fees Due for the Month of June"
+                        value="Rs. 2000"
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <MDBox mb={3}>
-                <ReportsLineChart
-                  color="dark"
-                  title="completed tasks"
-                  description="Last Campaign Performance"
-                  date="just updated"
-                  chart={tasks}
-                />
-              </MDBox>
-            </Grid>
-          </Grid>
-        </MDBox>
-        <MDBox>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6} lg={8}>
-              <Projects />
-            </Grid>
-            <Grid item xs={12} md={6} lg={4}>
-              <OrdersOverview />
-            </Grid>
-          </Grid>
-        </MDBox>
+        )}
+
+        {tabValue === "table" && (
+            <MDBox pt={7} pb={3}>
+                <Grid container spacing={6}>
+                    <Grid item xs={12}>
+                        <Card>
+                            <MDBox
+                                mx={2}
+                                mt={-3}
+                                py={3}
+                                px={2}
+                                variant="gradient"
+                                bgColor="info"
+                                borderRadius="lg"
+                                coloredShadow="info"
+                            >
+                                <MDTypography variant="h6" color="white">
+                                Authors Table
+                                </MDTypography>
+                            </MDBox>
+                            <MDBox pt={3}>
+                                <DataTable
+                                table={{ columns, rows }}
+                                isSorted={false}
+                                entriesPerPage={false}
+                                showTotalEntries={false}
+                                noEndBorder
+                                />
+                            </MDBox>
+                        </Card>
+                    </Grid>
+                </Grid>
+            </MDBox>
+        )}
+
       </MDBox>
       <Footer />
     </DashboardLayout>

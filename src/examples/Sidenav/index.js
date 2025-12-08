@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { useEffect } from "react";
 
 // react-router-dom components
@@ -39,6 +24,9 @@ import SidenavCollapse from "examples/Sidenav/SidenavCollapse";
 import SidenavRoot from "examples/Sidenav/SidenavRoot";
 import sidenavLogoLabel from "examples/Sidenav/styles/sidenav";
 
+import { useAuthStore } from "store/authStore";
+import { useNavigate } from "react-router-dom";
+
 // Material Dashboard 2 React context
 import {
   useMaterialUIController,
@@ -52,6 +40,9 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
   const location = useLocation();
   const collapseName = location.pathname.replace("/", "");
+
+  const logout = useAuthStore((state) => state.logout);
+  const navigate = useNavigate();
 
   let textColor = "white";
 
@@ -84,7 +75,9 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
   }, [dispatch, location]);
 
   // Render all the routes from the routes.js (All the visible items on the Sidenav)
-  const renderRoutes = routes.map(({ type, name, icon, title, noCollapse, key, href, route }) => {
+  const renderRoutes = routes
+  .filter(route => !route.hideInSidenav)  // <-- skip hidden routes
+  .map(({ type, name, icon, title, noCollapse, key, href, route }) => {
     let returnValue;
 
     if (type === "collapse") {
@@ -181,15 +174,15 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
       <List>{renderRoutes}</List>
       <MDBox p={2} mt="auto">
         <MDButton
-          component="a"
-          href="https://www.creative-tim.com/product/material-dashboard-pro-react"
-          target="_blank"
-          rel="noreferrer"
-          variant="gradient"
-          color={sidenavColor}
-          fullWidth
+            variant="gradient"
+            color="error"
+            fullWidth
+            onClick={() => {
+                logout(); 
+                navigate("/authentication/sign-in"); // no timeout needed
+            }}
         >
-          upgrade to pro
+            Logout
         </MDButton>
       </MDBox>
     </SidenavRoot>
