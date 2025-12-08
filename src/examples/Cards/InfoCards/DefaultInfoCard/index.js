@@ -1,18 +1,3 @@
-/**
-=========================================================
-* Material Dashboard 2 React - v2.2.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/material-dashboard-react
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-
-Coded by www.creative-tim.com
-
- =========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 // prop-types is library for typechecking of props
 import PropTypes from "prop-types";
 
@@ -28,26 +13,36 @@ import MDTypography from "components/MDTypography";
 
 import burceMars from "assets/images/bruce-mars.jpg";
 
-function DefaultInfoCard({profile, title, description, value }) {
+function DefaultInfoCard({ profile, title, description, value }) {
   return (
-    <Card>
+    <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <MDBox p={2} mx={3} display="flex" gap={2} justifyContent="start">
         <Grid item>
-            <MDAvatar src={profile ? profile : burceMars} alt="profile-image" size="md" shadow="sm" />
+          <MDAvatar
+            src={profile ? profile : burceMars}
+            alt="profile-image"
+            size="md"
+            shadow="sm"
+          />
         </Grid>
+
         <MDBox display="flex" flexDirection="column" justifyContent="start" mt={0.5}>
-            <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
+          <MDTypography variant="h6" fontWeight="medium" textTransform="capitalize">
             {title}
-            </MDTypography>
-            {description && (
+          </MDTypography>
+
+          {description && (
             <MDTypography variant="caption" color="text" fontWeight="regular">
-                {description}
+              {description}
             </MDTypography>
-            )}
+          )}
         </MDBox>
       </MDBox>
-      <MDBox pb={2} px={2} textAlign="center" lineHeight={1.25}>
+
+      {/* Push this section to the bottom for consistent height */}
+      <MDBox pb={2} px={2} textAlign="center" lineHeight={1.25} mt="auto">
         {description && !value ? null : <Divider />}
+
         {value && (
           <MDTypography variant="h5" fontWeight="medium">
             {value}
@@ -57,6 +52,7 @@ function DefaultInfoCard({profile, title, description, value }) {
     </Card>
   );
 }
+
 
 // Setting default values for the props of DefaultInfoCard
 DefaultInfoCard.defaultProps = {

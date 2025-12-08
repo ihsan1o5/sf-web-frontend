@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // @mui material components
 import Grid from "@mui/material/Grid";
 
@@ -21,14 +21,36 @@ import Tab from "@mui/material/Tab";
 import Icon from "@mui/material/Icon";
 
 import authorsTableData from "layouts/tables/data/authorsTableData";
+import { useAuthStore } from "store/authStore";
+import { getStudentsBySchool } from "actions/student.actions";
 
 
 function Dashboard() {
     const { columns, rows } = authorsTableData();
     const [tabsOrientation, setTabsOrientation] = useState("horizontal");
     const [tabValue, setTabValue] = useState("card");
+    const [students, setStudents] = useState([]);
+    const { token } = useAuthStore();
 
     const handleSetTabValue = (event, newValue) => setTabValue(newValue);
+
+    useEffect(() => {
+      const fetchStudents = async () => {
+        if (token) {
+          const result = await getStudentsBySchool(token);
+    
+          if (result.success) {
+            setStudents(result.data);
+          } else {
+            console.log("Error fetching students:", result.error);
+          }
+        }
+      };
+    
+      fetchStudents();
+    }, [token]);    
+
+    console.log("all students data ====>>> ", students);
 
   return (
     <DashboardLayout>
@@ -125,38 +147,19 @@ function Dashboard() {
 
         {tabValue === "card" && (
             <Grid container spacing={3} mt={1}>
-                <Grid item xs={12} md={6} xl={3}>
-                    <DefaultInfoCard
-                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495035"
-                        title="M. Idrees"
-                        description="School Fees Due for the Month of June"
-                        value="Rs. 2000"
-                    />
+              {students.map((std) => (
+                <Grid item xs={12} md={6} xl={3} key={std._id}>
+                  <DefaultInfoCard
+                    profile={
+                      std.profileImage ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(std.name)}`
+                    }
+                    title={std.name}
+                    description={`School fee due for the month of ${std.forMonth}`}
+                    value={`Rs. ${Number(std.fee?.$numberDecimal || 0).toLocaleString()}`}
+                  />
                 </Grid>
-                <Grid item xs={12} md={6} xl={3}>
-                    <DefaultInfoCard
-                        profile=""
-                        title="M. Osama"
-                        description="School Fees Due for the Month of June"
-                        value="Rs. 2000"
-                    />
-                </Grid>
-                <Grid item xs={12} md={6} xl={3}>
-                    <DefaultInfoCard
-                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495035"
-                        title="Abdurrahman"
-                        description="School Fees Due for the Month of June"
-                        value="Rs. 2000"
-                    />
-                </Grid>
-                <Grid item xs={12} md={6} xl={3}>
-                    <DefaultInfoCard
-                        profile="https://api.dicebear.com/7.x/avataaars/svg?seed=1560303495036"
-                        title="M. Saeed"
-                        description="School Fees Due for the Month of June"
-                        value="Rs. 2000"
-                    />
-                </Grid>
+              ))}
             </Grid>
         )}
 
