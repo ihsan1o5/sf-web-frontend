@@ -13,7 +13,7 @@ import MDTypography from "components/MDTypography";
 
 import burceMars from "assets/images/bruce-mars.jpg";
 
-function DefaultInfoCard({ profile, title, description, value }) {
+function DefaultInfoCard({ profile, title, description, value, fatherName="No-Name", fatherCnic="1560495003433" }) {
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <MDBox p={2} mx={3} display="flex" gap={2} justifyContent="start">
@@ -37,6 +37,15 @@ function DefaultInfoCard({ profile, title, description, value }) {
             </MDTypography>
           )}
         </MDBox>
+      </MDBox>
+
+      <MDBox px={5}>
+          <MDTypography variant="caption" color="text" fontWeight="regular" display="block">
+            Father Name: <MDTypography display="inline" fontSize="12px" fontWeight="bold">{fatherName}</MDTypography>
+          </MDTypography>
+          <MDTypography variant="caption" color="text" fontWeight="regular" display="block" mt={0.5}>
+            Father CNIC: <MDTypography display="inline" fontSize="12px" fontWeight="bold">{fatherCnic}</MDTypography>
+          </MDTypography>
       </MDBox>
 
       {/* Push this section to the bottom for consistent height */}

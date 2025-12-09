@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 // @mui material components
 import Grid from "@mui/material/Grid";
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -26,29 +27,60 @@ import { getStudentsBySchool } from "actions/student.actions";
 
 
 function Dashboard() {
-    const { columns, rows } = authorsTableData();
     const [tabsOrientation, setTabsOrientation] = useState("horizontal");
     const [tabValue, setTabValue] = useState("card");
-    const [students, setStudents] = useState([]);
     const { token } = useAuthStore();
+    
+    const [students, setStudents] = useState([]);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const { columns, rows } = authorsTableData(students);
 
     const handleSetTabValue = (event, newValue) => setTabValue(newValue);
 
     useEffect(() => {
-      const fetchStudents = async () => {
-        if (token) {
-          const result = await getStudentsBySchool(token);
-    
-          if (result.success) {
-            setStudents(result.data);
-          } else {
-            console.log("Error fetching students:", result.error);
-          }
-        }
-      };
-    
-      fetchStudents();
-    }, [token]);    
+        const loadStudents = async () => {
+            if (!token || isLoading || !hasMore) return;
+
+            setIsLoading(true);
+
+            const result = await getStudentsBySchool(token, page, 20);
+
+            if (result.success) {
+                setStudents(prev => [...prev, ...result.data]);
+
+                if (result.pagination.page >= result.pagination.totalPages) {
+                    setHasMore(false);
+                }
+            } else {
+                console.log("Error fetching students:", result.error);
+            }
+
+            setIsLoading(false);
+        };
+
+        loadStudents();
+    }, [token, page]);
+
+    useEffect(() => {
+        const trigger = document.getElementById("loadMoreTrigger");
+        if (!trigger) return;
+
+        const observer = new IntersectionObserver(
+            entries => {
+            if (entries[0].isIntersecting && hasMore && !isLoading) {
+                setPage(prev => prev + 1);
+            }
+            },
+            { threshold: 1 }
+        );
+
+        observer.observe(trigger);
+
+        return () => observer.disconnect();
+    }, [hasMore, isLoading]);
 
     console.log("all students data ====>>> ", students);
 
@@ -146,21 +178,34 @@ function Dashboard() {
         </Grid>
 
         {tabValue === "card" && (
-            <Grid container spacing={3} mt={1}>
-              {students.map((std) => (
-                <Grid item xs={12} md={6} xl={3} key={std._id}>
-                  <DefaultInfoCard
-                    profile={
-                      std.profileImage ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(std.name)}`
-                    }
-                    title={std.name}
-                    description={`School fee due for the month of ${std.forMonth}`}
-                    value={`Rs. ${Number(std.fee?.$numberDecimal || 0).toLocaleString()}`}
-                  />
+            <>
+                <Grid container spacing={3} mt={1}>
+                {students.map((std) => (
+                    <Grid item xs={12} md={6} xl={3} key={std._id}>
+                        <DefaultInfoCard
+                            profile={
+                                std.profileImage ||
+                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(std.name)}`
+                            }
+                            title={std.name}
+                            description={std.remarks}
+                            value={`Rs. ${Number(std.fee?.$numberDecimal || 0).toLocaleString()}`}
+                            fatherName={std.parent?.name}
+                            fatherCnic={std.parent?.cnic}
+                        />
+                    </Grid>
+                ))}
                 </Grid>
-              ))}
-            </Grid>
+
+                {/* Infinite scroll trigger */}
+                <div id="loadMoreTrigger" style={{ height: "40px" }} />
+
+                {isLoading && (
+                    <MDBox textAlign="center">
+                        <CircularProgress color="success" />
+                    </MDBox>
+                )}
+            </>
         )}
 
         {tabValue === "table" && (
@@ -179,16 +224,23 @@ function Dashboard() {
                                 coloredShadow="info"
                             >
                                 <MDTypography variant="h6" color="white">
-                                Authors Table
+                                    Students Table
                                 </MDTypography>
                             </MDBox>
                             <MDBox pt={3}>
                                 <DataTable
-                                table={{ columns, rows }}
-                                isSorted={false}
-                                entriesPerPage={false}
-                                showTotalEntries={false}
-                                noEndBorder
+                                    table={{ columns, rows }}
+                                    isSorted={false}
+                                    entriesPerPage={false}
+                                    showTotalEntries={false}
+                                    noEndBorder
+                                    pagination={{
+                                        onEndReached: () => {
+                                            if (!isLoading && hasMore) {
+                                                setPage(prev => prev + 1);   // load next API page
+                                            }
+                                        },
+                                    }}
                                 />
                             </MDBox>
                         </Card>
