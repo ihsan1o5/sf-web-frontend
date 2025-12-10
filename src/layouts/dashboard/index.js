@@ -5,11 +5,10 @@ import Grid from "@mui/material/Grid";
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
+import FolderOffIcon from '@mui/icons-material/FolderOff';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import DirectionsIcon from '@mui/icons-material/Directions';
 
 
 // Material Dashboard 2 React components
@@ -31,7 +30,7 @@ import Icon from "@mui/material/Icon";
 
 import authorsTableData from "layouts/tables/data/authorsTableData";
 import { useAuthStore } from "store/authStore";
-import { getStudentsBySchool } from "actions/student.actions";
+import { getStudentsBySchool, searchStudent } from "actions/student.actions";
 
 
 function Dashboard() {
@@ -43,12 +42,19 @@ function Dashboard() {
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchPage, setSearchPage] = useState(1);
+    const [searchHasMore, setSearchHasMore] = useState(true);
     
     const { columns, rows } = authorsTableData(students);
 
     const handleSetTabValue = (event, newValue) => setTabValue(newValue);
 
     useEffect(() => {
+        if (isSearching) return;
+
         const loadStudents = async () => {
             if (!token || isLoading || !hasMore) return;
 
@@ -70,7 +76,7 @@ function Dashboard() {
         };
 
         loadStudents();
-    }, [token, page]);
+    }, [token, page, isSearching]);
 
     useEffect(() => {
         const trigger = document.getElementById("loadMoreTrigger");
@@ -78,17 +84,64 @@ function Dashboard() {
 
         const observer = new IntersectionObserver(
             entries => {
-            if (entries[0].isIntersecting && hasMore && !isLoading) {
-                setPage(prev => prev + 1);
-            }
+                if (entries[0].isIntersecting && !isLoading) {
+                    if (isSearching && searchHasMore) {
+                        setSearchPage(prev => prev + 1);
+                    } else if (!isSearching && hasMore) {
+                        setPage(prev => prev + 1);
+                    }
+                }
             },
             { threshold: 1 }
         );
 
         observer.observe(trigger);
-
         return () => observer.disconnect();
-    }, [hasMore, isLoading]);
+    }, [isSearching, hasMore, searchHasMore, isLoading]);
+
+    useEffect(() => {
+        if (!isSearching) return;
+
+        const loadSearchResults = async () => {
+            if (!token || isLoading || !searchHasMore) return;
+
+            setIsLoading(true);
+
+            const result = await searchStudent(token, searchQuery, searchPage, 20);
+
+            if (result.success) {
+                setStudents(prev => [...prev, ...result.data]);
+
+                if (result.pagination.page >= result.pagination.totalPages) {
+                    setSearchHasMore(false);
+                }
+            }
+
+            setIsLoading(false);
+        };
+
+        loadSearchResults();
+    }, [token, searchPage, isSearching]);
+
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            if (searchQuery.trim() === "") {
+                // Exit search mode → Reset
+                setIsSearching(false);
+                setStudents([]);
+                setPage(1);
+                setHasMore(true);
+            } else {
+                // Enter search mode
+                setIsSearching(true);
+                setStudents([]);
+                setSearchPage(1);
+                setSearchHasMore(true);
+            }
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(delay);
+    }, [searchQuery]);
 
     console.log("all students data ====>>> ", students);
 
@@ -170,6 +223,8 @@ function Dashboard() {
                 <InputBase
                   sx={{ ml: 1, flex: 1 }}
                   placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
                   <SearchIcon />
@@ -233,7 +288,7 @@ function Dashboard() {
             </>
         )}
 
-        {tabValue === "table" && (
+        {tabValue === "table" && students.length > 0 && (
             <MDBox pt={7} pb={3}>
                 <Grid container spacing={6}>
                     <Grid item xs={12}>
@@ -269,6 +324,19 @@ function Dashboard() {
                                 />
                             </MDBox>
                         </Card>
+                    </Grid>
+                </Grid>
+            </MDBox>
+        )}
+
+        {students.length === 0 && (
+            <MDBox pt={7} pb={3} textAlign="center">
+                <Grid container spacing={6}>
+                    <Grid item xs={12}>
+                        <FolderOffIcon sx={{ width: 120, height: 120, color: "grey.500" }} />
+                        <MDTypography>
+                            No Data Found!
+                        </MDTypography>
                     </Grid>
                 </Grid>
             </MDBox>
