@@ -3,6 +3,14 @@ import { useState, useEffect } from "react";
 // @mui material components
 import Grid from "@mui/material/Grid";
 import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import InputBase from '@mui/material/InputBase';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import SearchIcon from '@mui/icons-material/Search';
+import DirectionsIcon from '@mui/icons-material/Directions';
+
 
 // Material Dashboard 2 React components
 import MDBox from "components/MDBox";
@@ -150,7 +158,24 @@ function Dashboard() {
           </Grid>
         </Grid>
 
-        <Grid container spacing={3} alignItems="center" mt={1}>
+        <Grid container alignItems="center" mt={1}>
+            <Grid item xs={12} md={6} lg={7}>
+              <Paper
+                component="form"
+                sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', width: '100%' }}
+              >
+                <IconButton sx={{ p: '10px' }} aria-label="menu">
+                  <MenuIcon />
+                </IconButton>
+                <InputBase
+                  sx={{ ml: 1, flex: 1 }}
+                  placeholder="Search"
+                />
+                <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+                  <SearchIcon />
+                </IconButton>
+              </Paper>
+            </Grid>
             <Grid item xs={12} md={6} lg={4} sx={{ ml: "auto" }}>
                 <AppBar position="static">
                     <Tabs orientation={tabsOrientation} value={tabValue} onChange={handleSetTabValue}>
