@@ -30,6 +30,7 @@ import Icon from "@mui/material/Icon";
 
 import authorsTableData from "layouts/tables/data/authorsTableData";
 import { useAuthStore } from "store/authStore";
+import { useUploadFileStore } from "store/uploadFileStore";
 import { getStudentsBySchool, searchStudent } from "actions/student.actions";
 
 
@@ -37,6 +38,7 @@ function Dashboard() {
     const [tabsOrientation, setTabsOrientation] = useState("horizontal");
     const [tabValue, setTabValue] = useState("card");
     const { token } = useAuthStore();
+    const refreshKey = useUploadFileStore(state => state.refreshKey);
     
     const [students, setStudents] = useState([]);
     const [page, setPage] = useState(1);
@@ -76,7 +78,7 @@ function Dashboard() {
         };
 
         loadStudents();
-    }, [token, page, isSearching]);
+    }, [token, page, isSearching, refreshKey]);
 
     useEffect(() => {
         const trigger = document.getElementById("loadMoreTrigger");
@@ -142,6 +144,18 @@ function Dashboard() {
 
         return () => clearTimeout(delay);
     }, [searchQuery]);
+
+    useEffect(() => {
+        console.log("🔥 Refresh triggered — resetting student list...");
+    
+        setStudents([]);
+        setPage(1);
+        setHasMore(true);
+        setIsSearching(false);
+    
+        // optional: scroll to top
+        // window.scrollTo({ top: 0, behavior: "smooth" });
+    }, [refreshKey]);    
 
     console.log("all students data ====>>> ", students);
 
@@ -329,7 +343,7 @@ function Dashboard() {
             </MDBox>
         )}
 
-        {students.length === 0 && (
+        {students.length === 0 && !isLoading && (
             <MDBox pt={7} pb={3} textAlign="center">
                 <Grid container spacing={6}>
                     <Grid item xs={12}>

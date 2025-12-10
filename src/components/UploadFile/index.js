@@ -5,6 +5,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import {useDropzone} from 'react-dropzone'
 import { uploadFilesToCloudinary } from 'actions/file.actions';
 import { useAuthStore } from 'store/authStore';
+import { useUploadFileStore } from 'store/uploadFileStore';
 
 import { getFileType } from 'utils';
 import Thumbnail from 'components/Thumbnail';
@@ -18,61 +19,69 @@ function UploadFile() {
     const [files, setFiles] = useState([]);
     const { showToast, ToastComponent } = useToast();
     const { token } = useAuthStore();
+    const triggerRefresh = useUploadFileStore(state => state.triggerRefresh);
 
-    const onDrop = useCallback(async(acceptedFiles) => {
+
+    const onDrop = useCallback(async (acceptedFiles) => {
         setFiles(acceptedFiles);
         let uploadedList = [];
-
-        // queue uploads for valid files
+        let successfullyUploadedFiles = []; // track which files uploaded to cloudinary
+    
+        // Upload to Cloudinary
         for (const file of acceptedFiles) {
             const { extension } = getFileType(file.name);
             const isFileValid = isValidFileType(extension);
-
-            if (!isFileValid) {
-                // skip invalid files, they will be removed by useEffect
-                continue;
-            }
-
+    
+            if (!isFileValid) continue;
+    
             try {
                 const result = await uploadFilesToCloudinary(file, "school-fee-data", token);
-
+    
                 if (result.success) {
-                    // save uploaded file info to state
+    
                     uploadedList.push({
                         name: result.files.name,
                         public_id: result.files.public_id,
                         url: result.files.url,
                     });
-
-                    // remove uploaded file from the files array
-                    setFiles(prev => prev.filter(f => f.name !== file.name));
-
+    
+                    successfullyUploadedFiles.push(file.name);
+    
                 } else {
                     console.error("Upload failed for", file.name, result.error);
                     return showToast({
                         color: "error",
                         icon: "warning",
                         title: "Failed to upload file!",
-                        content: `There is an error uploading ${file.name} file, ${result.error}` || `Something went wrong while uploading f0ile ${file.name}`,
+                        content: `Error uploading ${file.name}: ${result.error}`,
                     });
                 }
+    
             } catch (err) {
                 console.error("Upload error for", file.name, err);
             }
         }
-
-        // After loop finishes uploading all files
+    
+        // Save to DB only after all uploads finish
         if (uploadedList.length > 0) {
             const saveRes = await saveUploadedFilesToDB(uploadedList, token);
+    
             if (saveRes.success) {
                 console.log("All uploaded files saved to DB:", saveRes.data);
+    
+                // 🟢 Remove only after DB save success
+                setFiles(prev => prev.filter(f => !successfullyUploadedFiles.includes(f.name)));
+
+                // 🔥 Trigger global refresh
+                triggerRefresh();
+    
                 showToast({
                     color: "success",
                     icon: "check",
                     title: "Files saved successfully",
                     content: `${saveRes.data.length} files saved in DB`
                 });
-                
+    
             } else {
                 showToast({
                     color: "error",
@@ -82,8 +91,7 @@ function UploadFile() {
                 });
             }
         }
-
-    });
+    });    
     const {getRootProps, getInputProps, isDragActive} = useDropzone({onDrop});
 
     // REMOVE INVALID FILES ONE BY ONE

@@ -5,6 +5,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Icon from "@mui/material/Icon";
 import MDBox from "components/MDBox";
+import CircularProgress from '@mui/material/CircularProgress';
 import Sidenav from "examples/Sidenav";
 import Configurator from "examples/Configurator";
 import rtlPlugin from "stylis-plugin-rtl";
@@ -169,7 +170,7 @@ export default function App() {
 
   if (isCheckingAuth) {
     // show a loader instead of null
-    return <div>Loading...</div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}><CircularProgress color="success" /></div>;
   }
   return direction === "rtl" ? (
     <CacheProvider value={rtlCache}>
