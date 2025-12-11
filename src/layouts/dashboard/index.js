@@ -17,6 +17,8 @@ import Card from "@mui/material/Card";
 import DataTable from "examples/Tables/DataTable";
 import MDTypography from "components/MDTypography";
 import DefaultInfoCard from "examples/Cards/InfoCards/DefaultInfoCard";
+import UpdateStudentModal from "components/UpdateStudentModal/UpdateStudentModal";
+import CustomPopupAlert from "components/CustomPopupAlert";
 
 // Material Dashboard 2 React example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
@@ -49,8 +51,29 @@ function Dashboard() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchPage, setSearchPage] = useState(1);
     const [searchHasMore, setSearchHasMore] = useState(true);
+
+    const [openUpdateModal, setOpenUpdateModal] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+
+    const handleOpenUpdate = (student) => {
+        setSelectedStudent(student);
+        setOpenUpdateModal(true);
+    };
+
+    const handleCloseUpdate = () => {
+        setSelectedStudent(null);
+        setOpenUpdateModal(false);
+        setOpenDeleteModal(false);
+    };
+
+    const handleDelete = (student) => {
+        setSelectedStudent(student);
+        setOpenDeleteModal(true);
+    }
     
-    const { columns, rows } = authorsTableData(students);
+    const { columns, rows } = authorsTableData(students, handleOpenUpdate, handleDelete);
 
     const handleSetTabValue = (event, newValue) => setTabValue(newValue);
 
@@ -161,6 +184,17 @@ function Dashboard() {
 
   return (
     <DashboardLayout>
+        <UpdateStudentModal
+            open={openUpdateModal}
+            onClose={handleCloseUpdate}
+            student={selectedStudent}
+        />
+
+        <CustomPopupAlert
+            open={openDeleteModal}
+            onClose={handleCloseUpdate}
+            studentId={selectedStudent}
+        />
       <DashboardNavbar />
       <MDBox py={3}>
         <Grid container spacing={3}>
@@ -286,6 +320,8 @@ function Dashboard() {
                             value={`Rs. ${Number(std.fee?.$numberDecimal || 0).toLocaleString()}`}
                             fatherName={std.parent?.name}
                             fatherCnic={std.parent?.cnic}
+                            onUpdate={() => handleOpenUpdate(std)}
+                            onDelete={() => handleDelete(std._id)}
                         />
                     </Grid>
                 ))}

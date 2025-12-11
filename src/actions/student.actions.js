@@ -53,3 +53,58 @@ export const searchStudent = async (token, query, page = 1, limit = 20) => {
     return { success: false, error: error.message };
   }
 };
+
+export const updateStudent = async (token, payload={}, id) => {
+    try {
+        if (!token) return new Error("User not authenticated");
+
+        const res = await fetch(`${API_URL}/students/update/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        console.log("update students log =====>>> ", data);
+
+        if (!res.ok) throw new Error(data.message || "Failed to update student record!");
+
+        return {
+            success: true,
+            message: "Student updated!"
+        };
+  } catch (error) {
+        console.log("Error updating student:", error);
+        return { success: false, error: error.message };
+  }
+}
+
+export const deleteStudent = async (token, id) => {
+    try {
+        if (!token) return new Error("User not authenticated");
+
+        const res = await fetch(`${API_URL}/students/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Failed to delete student record!");
+
+        return {
+            success: true,
+            message: "Student deleted!"
+        };
+  } catch (error) {
+        console.log("Error deleting student:", error);
+        return { success: false, error: error.message };
+  }
+}

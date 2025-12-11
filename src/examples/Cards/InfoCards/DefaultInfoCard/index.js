@@ -20,7 +20,7 @@ import MDTypography from "components/MDTypography";
 
 import burceMars from "assets/images/bruce-mars.jpg";
 
-function DefaultInfoCard({ profile, title, description, value, fatherName="No-Name", fatherCnic="1560495003433" }) {
+function DefaultInfoCard({ profile, title, description, value, fatherName="No-Name", fatherCnic="1560495003433", onUpdate, onDelete }) {
 
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
@@ -90,14 +90,14 @@ function DefaultInfoCard({ profile, title, description, value, fatherName="No-Na
                 },
                 }}
             >
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => { handleClose(); onUpdate(); }}>
                     <EditIcon fontSize='small' />
                     <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
                     <MDTypography fontSize="16px">
                         Update
                     </MDTypography>
                 </MenuItem>
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={() => {handleClose(); onDelete(); }}>
                     <DeleteIcon fontSize='small' />
                     <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
                     <MDTypography fontSize="16px">
