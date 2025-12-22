@@ -25,40 +25,10 @@ const style = {
   borderRadius: 2,
 };
 
-export default function CustomPopupAlert({ open, onClose, studentId }) {
-    const { token } = useAuthStore();
-    const triggerRefresh = useUploadFileStore(s => s.triggerRefresh);
-    const { showToast, ToastComponent } = useToast();
-
-    const handleSubmit = async () => {
-        const result = await deleteStudent(
-            token, 
-            studentId
-        );
-
-        if (result.success) {
-            triggerRefresh();
-            onClose();
-            showToast({
-                color: "success",
-                icon: "check",
-                title: "Delete Success!",
-                content: "Student record has been deleted successfully."
-            });
-        } else {
-            showToast({
-                color: "error",
-                icon: "warning",
-                title: "Delete Failed",
-                content: "Something went wrong while deleting the record. Please try again latter."
-            });
-        }
-        // console.log("submitting update form =============>>>>>>>> ", student);
-    };
+export default function CustomPopupAlert({ open, onClose, handleSubmit }) {
 
   return (
     <>
-        {ToastComponent}
         <Modal open={open} onClose={onClose}>
             <Box sx={style}>
                 <MDBox textAlign="center">

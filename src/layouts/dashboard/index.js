@@ -29,11 +29,12 @@ import AppBar from "@mui/material/AppBar";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Icon from "@mui/material/Icon";
+import useToast from "hooks/useToast";
 
 import authorsTableData from "layouts/tables/data/authorsTableData";
 import { useAuthStore } from "store/authStore";
 import { useUploadFileStore } from "store/uploadFileStore";
-import { getStudentsBySchool, searchStudent } from "actions/student.actions";
+import { getStudentsBySchool, searchStudent, deleteStudent, getCounts } from "actions/student.actions";
 
 
 function Dashboard() {
@@ -41,6 +42,8 @@ function Dashboard() {
     const [tabValue, setTabValue] = useState("card");
     const { token } = useAuthStore();
     const refreshKey = useUploadFileStore(state => state.refreshKey);
+    const triggerRefresh = useUploadFileStore(s => s.triggerRefresh);
+    const { showToast, ToastComponent } = useToast();
     
     const [students, setStudents] = useState([]);
     const [page, setPage] = useState(1);
@@ -57,6 +60,15 @@ function Dashboard() {
 
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
+    const [counts, setCounts] = useState({
+        pendingPayment: 0,
+        totalPaid: 0,
+        totalAmount: 0,
+        totalStudents: 0,
+    });
+    
+    const [countsLoading, setCountsLoading] = useState(false);
+
     const handleOpenUpdate = (student) => {
         setSelectedStudent(student);
         setOpenUpdateModal(true);
@@ -72,6 +84,31 @@ function Dashboard() {
         setSelectedStudent(student);
         setOpenDeleteModal(true);
     }
+
+    const handleSubmitDelete = async () => {
+        const result = await deleteStudent(
+            token, 
+            selectedStudent
+        );
+
+        if (result.success) {
+            triggerRefresh();
+            setOpenDeleteModal(false);
+            showToast({
+                color: "success",
+                icon: "check",
+                title: "Delete Success!",
+                content: "Student record has been deleted successfully."
+            });
+        } else {
+            showToast({
+                color: "error",
+                icon: "warning",
+                title: "Delete Failed",
+                content: "Something went wrong while deleting the record. Please try again latter."
+            });
+        }
+    };
     
     const { columns, rows } = authorsTableData(students, handleOpenUpdate, handleDelete);
 
@@ -178,12 +215,34 @@ function Dashboard() {
     
         // optional: scroll to top
         // window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [refreshKey]);    
+    }, [refreshKey]);
+
+    useEffect(() => {
+        if (!token) return;
+      
+        const loadCounts = async () => {
+          setIsLoading(true);
+      
+          const result = await getCounts(token);
+      
+          if (result.success) {
+            setCounts(result.data);
+          } else {
+            console.error("Failed to fetch counts:", result.error);
+          }
+      
+          setIsLoading(false);
+        };
+      
+        loadCounts();
+    }, [token, refreshKey]);      
 
     console.log("all students data ====>>> ", students);
+    console.log("counts ==================>>>>> ", counts);
 
   return (
     <DashboardLayout>
+        {ToastComponent}
         <UpdateStudentModal
             open={openUpdateModal}
             onClose={handleCloseUpdate}
@@ -193,7 +252,7 @@ function Dashboard() {
         <CustomPopupAlert
             open={openDeleteModal}
             onClose={handleCloseUpdate}
-            studentId={selectedStudent}
+            handleSubmit={handleSubmitDelete}
         />
       <DashboardNavbar />
       <MDBox py={3}>
@@ -202,13 +261,13 @@ function Dashboard() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="dark"
-                icon="weekend"
-                title="Bookings"
-                count={281}
+                icon="payment"
+                title="Pending Payment"
+                count={counts.pendingPayment}
                 percentage={{
                   color: "success",
-                  amount: "+55%",
-                  label: "than lask week",
+                  amount: "",
+                  label: "Total paid for current month",
                 }}
               />
             </MDBox>
@@ -216,13 +275,13 @@ function Dashboard() {
           <Grid item xs={12} md={6} lg={3}>
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
-                icon="leaderboard"
-                title="Today's Users"
-                count="2,300"
+                icon="paid"
+                title="Total Paid"
+                count={counts.totalPaid}
                 percentage={{
                   color: "success",
-                  amount: "+3%",
-                  label: "than last month",
+                  amount: "",
+                  label: "Pending amount for current month",
                 }}
               />
             </MDBox>
@@ -231,13 +290,13 @@ function Dashboard() {
             <MDBox mb={1.5}>
               <ComplexStatisticsCard
                 color="success"
-                icon="store"
-                title="Revenue"
-                count="34k"
+                icon="money"
+                title="Total Amount"
+                count={counts.totalAmount}
                 percentage={{
                   color: "success",
-                  amount: "+1%",
-                  label: "than yesterday",
+                  amount: "",
+                  label: "Total to be paid for current month",
                 }}
               />
             </MDBox>
@@ -247,12 +306,12 @@ function Dashboard() {
               <ComplexStatisticsCard
                 color="primary"
                 icon="person_add"
-                title="Followers"
-                count="+91"
+                title="Total Students"
+                count={counts.totalStudents}
                 percentage={{
                   color: "success",
                   amount: "",
-                  label: "Just updated",
+                  label: "Total registered students",
                 }}
               />
             </MDBox>

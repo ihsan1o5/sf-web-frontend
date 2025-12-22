@@ -1,19 +1,44 @@
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import MDAvatar from "components/MDAvatar";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MDButton from "components/MDButton";
 
-export default function data(filesData = []) {
-  const Author = ({ image, name, createdAt }) => (
+import { getFileType } from "utils";
+import Thumbnail from "components/Thumbnail";
+
+const formatDateTime = (dateString, ) => {
+  if (!dateString) return "N/A";
+
+  const date = new Date(dateString);
+
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+export default function data(filesData = [], handleDelete) {
+  const Author = ({ file, createdAt }) => (
     <MDBox display="flex" alignItems="center" lineHeight={1}>
-      <MDAvatar src={image} name={name} size="sm" />
+      <Thumbnail
+        type={getFileType(file.name).type}
+        extenstion={getFileType(file.name).extension}
+        url={file.url}   // ✅ FIXED
+      />
+  
       <MDBox ml={2} lineHeight={1}>
         <MDTypography display="block" variant="button" fontWeight="medium">
-          {name}
+          {file.name}
         </MDTypography>
-        <MDTypography variant="caption">{createdAt}</MDTypography>
+        <MDTypography variant="caption">
+          {formatDateTime(createdAt)}
+        </MDTypography>
       </MDBox>
     </MDBox>
   );
@@ -27,28 +52,22 @@ export default function data(filesData = []) {
     rows: filesData.map((file) => ({
       file: (
         <Author
-          image={file.icon}
-          name={file.name}
+          file={file}
           createdAt={file.createdAt || "N/A"}
         />
       ),
 
       actions: (
         <MDBox display="flex" alignItems="center" justifyContent="center" gap={1}>
-          {/* Edit Button */}
-          <IconButton>
-            <EditIcon fontSize="small" />
-          </IconButton>
-
-          {/* Slash separator */}
-          <MDTypography variant="caption" fontWeight="bold">
-            /
-          </MDTypography>
-
-          {/* Delete Button (idle) */}
-          <IconButton>
-            <DeleteIcon fontSize="small" color="error" />
-          </IconButton>
+          <MDButton
+              variant="gradient"
+              color="error"
+              fullWidth
+              sx={{ width: 'auto' }}
+              onClick={() => handleDelete(file._id)}
+          >
+              Revert This File
+          </MDButton>
         </MDBox>
       ),
     })),

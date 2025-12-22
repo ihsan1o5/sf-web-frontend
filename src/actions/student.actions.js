@@ -108,3 +108,29 @@ export const deleteStudent = async (token, id) => {
         return { success: false, error: error.message };
   }
 }
+
+export const getCounts = async (token) => {
+  try {
+    if (!token) return new Error("User not authenticated");
+
+    const res = await fetch(`${API_URL}/students/get-counts`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || "Failed to fetch counts");
+
+    return {
+      success: true,
+      data: data.data,
+    };
+  } catch (error) {
+    console.log("Error getting counts:", error);
+    return { success: false, error: error.message };
+  }
+}

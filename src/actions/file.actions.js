@@ -81,3 +81,57 @@ export const saveUploadedFilesToDB = async (uploadedFiles, token) => {
         return { success: false, error: error.message };
     }
 }
+
+export const getFilesForCurrentUser = async (token, page = 1, limit = 20) => {
+    try {
+        if (!token) return new Error("User not authenticated");
+
+        const res = await fetch(`${API_URL}/files/?page=${page}&limit=${limit}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Failed to fetch files");
+
+        return {
+            success: true,
+            count: data.count,
+            data: data.data,
+            pagination: data.pagination,
+        };
+    } catch (error) {
+        console.log("Error getting files:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export const revertFileAndClearData = async (token, fileId) => {
+    try {
+        if (!token) return new Error("User not authenticated");
+
+        const res = await fetch(`${API_URL}/files/${fileId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Failed to delete file");
+
+        return {
+            success: true,
+            message: data.message
+        };
+    } catch (error) {
+        console.log("Error deleting file:", error);
+        return { success: false, error: error.message };
+    }
+}
