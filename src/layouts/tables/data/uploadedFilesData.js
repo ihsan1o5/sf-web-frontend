@@ -1,8 +1,5 @@
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
 import MDButton from "components/MDButton";
 
 import { getFileType } from "utils";

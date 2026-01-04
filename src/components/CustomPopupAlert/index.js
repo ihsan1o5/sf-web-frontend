@@ -8,11 +8,6 @@ import MDButton from "components/MDButton";
 import MDBox from "components/MDBox";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-import useToast from "hooks/useToast";
-import { useAuthStore } from "store/authStore";
-import { useUploadFileStore } from "store/uploadFileStore";
-import { deleteStudent } from "actions/student.actions";
-
 const style = {
   position: "absolute",
   top: "50%",
