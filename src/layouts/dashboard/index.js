@@ -267,7 +267,7 @@ function Dashboard() {
                 percentage={{
                   color: "success",
                   amount: "",
-                  label: "Total paid for current month",
+                  label: "Total amount to be paid",
                 }}
               />
             </MDBox>
@@ -281,7 +281,7 @@ function Dashboard() {
                 percentage={{
                   color: "success",
                   amount: "",
-                  label: "Pending amount for current month",
+                  label: "Total pending amount",
                 }}
               />
             </MDBox>
@@ -296,7 +296,7 @@ function Dashboard() {
                 percentage={{
                   color: "success",
                   amount: "",
-                  label: "Total to be paid for current month",
+                  label: "Sum of pending plus paid amount",
                 }}
               />
             </MDBox>

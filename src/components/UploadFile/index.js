@@ -14,6 +14,7 @@ import { isValidFileType } from 'utils';
 
 import useToast from 'hooks/useToast';
 import { saveUploadedFilesToDB } from 'actions/file.actions';
+import { getBankAccounts } from 'actions/account.actions';
 
 function UploadFile() {
     const [files, setFiles] = useState([]);
@@ -23,6 +24,18 @@ function UploadFile() {
 
 
     const onDrop = useCallback(async (acceptedFiles) => {
+        const userBankAccounts = await getBankAccounts(token);
+        console.log("account result ======>>>>>.. ", userBankAccounts);
+
+        if (userBankAccounts.success && userBankAccounts.accounts.length === 0) {
+            return showToast({
+                color: "error",
+                icon: "warning",
+                title: "Bank Account Not Found",
+                content: "It looks like you don't have any bank accounts added yet. Please add at least one bank account to proceed. Thank you!"
+            });
+        }
+
         setFiles(acceptedFiles);
         let uploadedList = [];
         let successfullyUploadedFiles = []; // track which files uploaded to cloudinary
